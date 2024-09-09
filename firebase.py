@@ -23,18 +23,18 @@ class FIREBASE:
         self.db = firestore.client()  # Initialize db here
 
     async def send_study_to_database(self, user_discord_id, user_discord_name, start_time, 
-        channel_id, channel_name, duration, server_id, server_name, study_tag):
+            channel_id, channel_name, duration, server_id, server_name, study_tag):
         try:
             # Round duration to 2 decimal places
             rounded_duration = Decimal(duration).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
-            study_doc_ref = self.db.collection('users_study').document(user_discord_id)
-            study_snapshot = study_doc_ref.get()
-
-            if not study_snapshot.exists:
-                # Find the userId from the user tab
+            study_doc_ref = self.db.collection('users_study')
+            query = study_doc_ref.where(field_path='userDiscordId', op_string='==', value=user_discord_id)
+            study_docs = query.get()
+            
+            if not study_docs:
+                # No document found, create a new one
                 user_doc_ref = self.db.collection('users').document(user_discord_id)
                 user_snapshot = user_doc_ref.get()
-                
                 initial_data = {
                     'userDiscordId': user_discord_id,
                     'userDiscordName': user_discord_name,
@@ -53,13 +53,16 @@ class FIREBASE:
                         'userPhotoURL': user_data.get('userPhotoURL', '')
                     })
                 
-                study_doc_ref.set(initial_data)
+                new_doc_ref = study_doc_ref.document()
+                new_doc_ref.set(initial_data)
                 study_data = initial_data
             else:
-                study_data = study_snapshot.to_dict()
+                # Use the first matching document
+                study_doc = study_docs[0]
+                study_data = study_doc.to_dict()
+                new_doc_ref = study_doc.reference
 
             study_details = study_data.get('studyDetails', [])
-
             # Convert start_time to UTC
             start_time_utc = start_time.replace(tzinfo=datetime.timezone.utc)
             duplicate_found = False
@@ -73,7 +76,6 @@ class FIREBASE:
                     study_details[i]['studyNumber'] = float(Decimal(str(study_details[i]['studyNumber'])) + rounded_duration)
                     duplicate_found = True
                     break
-
             if not duplicate_found:
                 new_detail = {
                     'studyTopic': study_tag,
@@ -82,8 +84,7 @@ class FIREBASE:
                 }
                 study_details.append(new_detail)
 
-            study_doc_ref.update({'studyDetails': study_details})
-
+            new_doc_ref.update({'studyDetails': study_details})
         except Exception as error:
             print(f"send_study_to_database error: {error}")
             raise error

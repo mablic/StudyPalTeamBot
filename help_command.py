@@ -1,56 +1,61 @@
 from discord import app_commands, Interaction
 
-def help_command(interaction: Interaction):
-    help_text = """
+class HelpCommands(app_commands.Group):
+    def __init__(self, bot):
+        super().__init__(name="help", description="Help commands for the Study Bot")
+        self.bot = bot
+
+    @app_commands.command(name="bot", description="Get help information about the Study Bot")
+    async def help_command(self, interaction: Interaction):
+        help_text = """
 **Available Commands:**
 
-1. `/tag [subject]`
-   Tag your current study session with a subject.
-   (Only works when you're in a voice channel)
+`/tag [subject]`
+• Tag your current study session with a subject.
+• Only works when you're in a voice channel.
 
-2. `/end_session`
-   Manually end your current study session.
+`/end_session`
+• Manually end your current study session.
 
-3. `/session_info`
-   View details of your current study session.
+`/session_info`
+• View details of your current study session.
 
-4. `/edit_tag [new_subject]`
-   Edit the tag of your current study session.
+`/edit_tag [new_subject]`
+• Edit the tag of your current study session.
 
-5. `/interview`
-   Start a mock interview.
-   (Only works when you're in a mock-interview text channel)
+`/interview`
+• Start a mock interview.
+• Only works in the #mock-interview channel.
 
-6. `/leetcode [type]`
-   Bot to generate a random leetcode question [easy|medium|hard].
-   (Only works when you're in a mock-interview text channel)
+`/leetcode [type]`
+• Generate a random LeetCode question.
+• Options: easy, medium, hard.
+• Only works in the #mock-interview channel.
 
-7. `/website`
-   Get the link to view your study records.
+`/website`
+• Get the link to view your study records.
 
-8. `/instruction`
-   Get the link to the bot setup instructions.
-   
-9. `/help`
-   Show this help message.
+`/instruction`
+• Get the link to the bot setup instructions.
 
-The bot tracks your time in voice channels containing 'Study Room'.
+`/help`
+• Show this help message.
+
+**Note:** The bot tracks your time in voice channels containing 'Study Room'.
 
 **Additional Information:**
-• View your study records at: https://studypalteam.com/
-• For detailed setup instructions, visit: https://studypalteam.com/discordBot
+• View your study records: https://studypalteam.com/
+• Setup instructions: https://studypalteam.com/discordbot
 """
-    return interaction.response.send_message(help_text)
+        await interaction.response.send_message(help_text)
 
-def setup(bot):
-    @bot.tree.command(name="help", description="Get help information about the Study Bot")
-    async def help_wrapper(interaction: Interaction):
-        await help_command(interaction)
-
-    @bot.tree.command(name="website", description="Get the link to view your study records")
-    async def website_command(interaction: Interaction):
+    @app_commands.command(name="website", description="Get the link to view your study records")
+    async def website_command(self, interaction: Interaction):
         await interaction.response.send_message("You can view your study records at: https://studypalteam.com/")
 
-    @bot.tree.command(name="instruction", description="Get the link to the bot setup instructions")
-    async def instruction_command(interaction: Interaction):
+    @app_commands.command(name="instruction", description="Get the link to the bot setup instructions")
+    async def instruction_command(self, interaction: Interaction):
         await interaction.response.send_message("For detailed setup instructions, visit: https://studypalteam.com/discordBot")
+
+def setup(bot):
+    bot.tree.add_command(HelpCommands(bot))
