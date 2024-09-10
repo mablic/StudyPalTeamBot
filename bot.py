@@ -10,8 +10,6 @@ import help_command
 import tag_commands
 from random_bq_list import bq_select
 
-WEBSITE="https://studypalteam.com/"
-WEBSITE_INSTRUCTION="https://studypalteam.com/discordBot"
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 # Load environment variables

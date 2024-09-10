@@ -6,7 +6,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import random
 
 # Firebase setup
-cred = credentials.Certificate("studypaldev01-firebase-adminsdk-c0m76-d5526fe019.json")
+cred = credentials.Certificate("firebase_production.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
